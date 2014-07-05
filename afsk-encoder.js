@@ -133,7 +133,7 @@ AfskEncoder.prototype = {
           if (state.current == state.PREAMBLE) {
             state.current = state.DATA;
             state.currentByte = this.symbolData[0];
-            state.unprocessedBytes = this.symbolData.length;
+            state.unprocessedBytes = this.symbolData.length - 1;
             state.unprocessedBits = 8;
             // console.log("...recursing for state DATA...");
             this.modulate(samples.subarray(i, samples.length));
