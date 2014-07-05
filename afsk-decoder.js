@@ -21,6 +21,8 @@ Packet.prototype = {
   terminate: function() {
     console.log("Packet: terminate!");
     // nop
+    // XXX skipped some CRC stuff
+    return true;
   },
 
   bytesWithoutCRC: function() {
