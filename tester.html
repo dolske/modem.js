@@ -15,6 +15,7 @@
 <div id=wavStripContainer style="overflow: scroll;">
   <canvas id=wavStrip width=3000 height=100 style="border: 1px solid #ddd"></canvas>
 </div>
+<textarea id=dataReceived></textarea>
 
 <script src="afsk-filters.js"></script>
 <script src="afsk-encoder.js"></script>
@@ -42,8 +43,8 @@ function runModem() {
   var mode = document.querySelector('input[name="mode"]:checked').value;
 
   if (mode == "send" || mode == "selftest") {
-    dataBuffer = modulateData(sampleText1, speakerSampleRate, null);
-    //dataBuffer = modulateData("abc123", speakerSampleRate, null);
+    //dataBuffer = modulateData(sampleText1, speakerSampleRate, null);
+    dataBuffer = modulateData("abc123", speakerSampleRate, null);
 
     var b = dataBuffer.getChannelData(0);
     var canvas = document.getElementById('wavStrip');
@@ -78,7 +79,7 @@ function onMicData(event) {
     decoder = new AfskDecoder(microphoneSampleRate, BAUDRATE, onDecoderData);
   }
 
-  //decoder.demodulate(samples);
+  decoder.demodulate(samples);
 }
 function onMicStream(stream) {
   console.log("-- onMicStream --");
@@ -145,6 +146,8 @@ function modulateData(data, sampleRate, completeCallback) {
 
 function onDecoderData(data) {
   console.log("DDDDD: got <" + data + ">");
+  var output = document.getElementById("dataReceived");
+  output.value = data + "\n";
 }
 
 function demodulateData(buffer) {
