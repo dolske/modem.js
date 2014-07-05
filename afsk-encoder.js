@@ -63,14 +63,9 @@ AfskEncoder.prototype = {
   phaseIncrementFreqLo: 0,
   samplesPerBit: 0.0,
 
-  // XXX in orig code this is 0x7E, but to match the afsk1200 samples I have
-  // FE is needed. Perhaps a bug in bit-stuffing? The orig code seems to
-  // explicitly not stuff the preamble, but...
-  // http://www.interfacebus.com/HDLC_Protocol_Description.html also says
-  // the preamble is 0x7E, with bitstuffing inserting a whole _byte_,
-  // eg 0x7E --> 0x7D, 0x5E and 0x7D --> 0x7D, 0x5D
-  PREAMBLE_BYTE: 0xFE,
-  TRAILER_BYTE: 0xFE,
+
+  PREAMBLE_BYTE: 0x7E,
+  TRAILER_BYTE: 0x7E,
 
   state : {
     current: 1,
@@ -84,7 +79,7 @@ AfskEncoder.prototype = {
     unprocessedBits: 0,
     unprocessedBytes: 0,
     currentByte: 0,
-    prevSymbolBit: false,
+    nrziToggle: false,
 
     bitBuffer: null,
     bitBufferBegin: 0,
@@ -102,6 +97,9 @@ AfskEncoder.prototype = {
    * reveiving end, a 0-bit after 5 contigious 1-bits will be discarded to
    * restore the original unstuffed data.
    *
+   * XXX http://www.interfacebus.com/HDLC_Protocol_Description.html says
+   * the preamble is 0x7E, with bitstuffing for user data inserting a whole
+   * _byte_, * eg 0x7E --> 0x7D, 0x5E and 0x7D --> 0x7D, 0x5D
    */
   expandFlags: function(utf8data) {
     // TODO!
@@ -197,25 +195,23 @@ AfskEncoder.prototype = {
     if (numSamples > state.bitBuffer.length)
         throw "Uhh, we want to make more samples than bitBuffer holds";
 
-    // Instead of a simple bit-to-frequency conversion, we change frequency
-    // upon a 0-bit, and maintain frequency upon a 1-bit.
+    // Bell 202 uses a low frequency tone (1200Hz) for a "mark" symbol (bit),
+    // and a high frequency tone (2200Hz) for a "space" symbol. The encoding
+    // uses NRZI (non-return to zero inverted) encoding. For a terrible
+    // explanation, see http://en.wikipedia.org/wiki/Non-return-to-zero
+    //
+    // Basically NRZI just means that to encode a 0-bit we need to switch
+    // the frequency and encode a symbol, while to encode a 1-bit we
+    // remain on the same frequency. We are encoding transitions, instead of
+    // simply mapping bit values to frequncies.
     var phaseInc;
     if (!bit)
-      phaseInc = state.prevSymbolBit ? this.phaseIncrementFreqLo : this.phaseIncrementFreqHi;
-    else
-      phaseInc = state.prevSymbolBit ? this.phaseIncrementFreqHi : this.phaseIncrementFreqLo;
-    state.prevSymbolBit = bit;
-// TODO this seems broken
+      state.nrziToggle = !state.nrziToggle;
+    phaseInc = state.nrziToggle ? this.phaseIncrementFreqHi : this.phaseIncrementFreqLo;
 
     while (numSamples--) {
-      state.bitBuffer[state.bitBufferEnd++] = Math.cos(state.phase);
-/*
+      state.bitBuffer[state.bitBufferEnd++] = Math.sin(state.phase);
       state.phase += phaseInc;
-*/
-      if (bit)
-        state.phase += this.phaseIncrementFreqHi;
-      else
-        state.phase += this.phaseIncrementFreqLo;
 
       if (state.phase > Math.PI * 2)
         state.phase -= Math.PI * 2;
