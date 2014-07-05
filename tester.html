@@ -47,8 +47,7 @@ function runModem() {
     dataBuffer = modulateData("abc123", speakerSampleRate, null);
 
     var b = dataBuffer.getChannelData(0);
-    var canvas = document.getElementById('wavStrip');
-    drawWaveformToCanvas(b, 0, canvas);
+    drawWaveformToCanvas(b, 0);
 
     playAudioBuffer(dataBuffer);
   }
@@ -190,7 +189,9 @@ function playAudioBuffer(buffer) {
 
 
 
-function drawWaveformToCanvas(buffer, start, canvas) {
+function drawWaveformToCanvas(buffer, start) {
+  console.log("-- drawWaveformToCanvas --");
+  var canvas = document.getElementById('wavStrip');
   var strip = canvas.getContext('2d');
 
   var h = strip.canvas.height;
