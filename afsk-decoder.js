@@ -14,6 +14,8 @@ Packet.prototype = {
   addByte: function(val) {
     console.log("Packet: addByte[" + this.dataSize + "] = " + val);
     this.data[this.dataSize++] = val;
+    // XXX skipped some CRC stuff
+    return true;
   },
 
   terminate: function() {
@@ -222,6 +224,9 @@ console.log("bits="+bits);
             state.flag_count++;
             console.log("FLAG FOUND (count = " + state.flag_count + ") in state " + state.current);
             state.flag_separator_seen = false;
+
+            state.data = 0;
+            state.bitcount = 0;
 
             switch (state.current) {
               case state.WAITING:

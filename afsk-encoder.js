@@ -9,8 +9,8 @@ function AfskEncoder(data, sampleRate, baud) {
 
   // Unclear if the orig code uses this. But allows preamble and trailer to be
   // specified by time, which then gets converted to how many bytes to send.
-  var preambleTime = 0.02;
-  var trailerTime = 0.02;
+  var preambleTime = 0.04;
+  var trailerTime = 0.04;
   this.preambleBytes = Math.ceil(preambleTime / (8 / baud)); // 8 bits-per-byte
   this.trailerBytes  = Math.ceil(trailerTime  / (8 / baud)); // 8 bits-per-byte
 
