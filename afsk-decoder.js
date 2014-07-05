@@ -27,7 +27,7 @@ Packet.prototype = {
 
   bytesWithoutCRC: function() {
     console.log("Packet: bytesWithoutCRC");
-    // XXX add a toString method with utf8 conversion?
+    // TODO
     return this.data.subarray(0, this.dataSize);
   },
 };
@@ -110,6 +110,19 @@ AfskDecoder.prototype = {
 
   packet: null,
   data_carrier: false, // TODO: getter/setter, with onDataCarrier
+
+  dataAvailable: function(data) {
+    var blob = new Blob([data]);
+    var fileReader = new FileReader();
+
+    fileReader.onload = function(e) {
+      console.log("fileReader onload");
+      this.onData(e.target.result);
+    }.bind(this);
+
+    // XXX is this doing proper utf8 conversion?
+    fileReader.readAsText(blob);
+  },
 
   correlation: function(x , y, j) { // (float[] x, float[] y, int j)
     var c = 0.0;
@@ -245,7 +258,7 @@ console.log("bits="+bits);
                     //System.out.print(String.format("%ddB:%.02f:%.02f\n", 
                     //                          emphasis,f0_max/-f1_min,max_period_error));
                     //handler.handlePacket(packet.bytesWithoutCRC());
-                    this.onData(this.packet.bytesWithoutCRC());
+                    this.dataAvailable(this.packet.bytesWithoutCRC());
                     //System.out.println(""+(++decode_count)+": "+packet);
                 }
                 this.packet = null;
