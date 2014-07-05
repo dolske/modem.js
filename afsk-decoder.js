@@ -120,7 +120,7 @@ AfskDecoder.prototype = {
       this.onData(e.target.result);
     }.bind(this);
 
-    // XXX is this doing proper utf8 conversion?
+    // This handles the utf8 conversion too.
     fileReader.readAsText(blob);
   },
 
@@ -234,7 +234,7 @@ AfskDecoder.prototype = {
           this.data_carrier = false;
           state.flag_count = 0;
         } else {
-console.log("bits="+bits);
+//console.log("bits="+bits);
           if (bits == 7) {
             state.flag_count++;
             console.log("FLAG FOUND (count = " + state.flag_count + ") in state " + state.current);
@@ -289,7 +289,6 @@ console.log("bits="+bits);
               }
 
               for (var k = 0; k < bits - 1; k++) {
-console.log("k");
                 state.bitcount++;
                 state.data >>>= 1;
                 state.data += 128;
@@ -307,7 +306,6 @@ console.log("k");
               }
 
               if (bits - 1 != 5) { // the zero after the ones is not a stuffing
-console.log("whuck");
                 state.bitcount++;
                 state.data >>= 1;
                 if (state.bitcount == 8) {

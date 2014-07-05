@@ -42,8 +42,8 @@ function runModem() {
   var mode = document.querySelector('input[name="mode"]:checked').value;
 
   if (mode == "send" || mode == "selftest") {
-    //dataBuffer = modulateData(sampleText1, speakerSampleRate, null);
-    dataBuffer = modulateData("abc123", speakerSampleRate, null);
+    dataBuffer = modulateData(sampleText1, speakerSampleRate, null);
+    //dataBuffer = modulateData("abc123", speakerSampleRate, null);
 
     var b = dataBuffer.getChannelData(0);
     var canvas = document.getElementById('wavStrip');
@@ -104,7 +104,7 @@ function onMicError(e) {
 }
 
 var sampleText1 =
-        "It is an ancient Mariner,\n" +
+        "It is an ancient Mariner, \u2603\n" +
         "And he stoppeth one of three.\n" +
         "'By thy long grey beard and glittering eye,\n" +
         "Now wherefore stopp'st thou me?\n";
