@@ -43,11 +43,11 @@ Packet.prototype = {
 // The sample code's test construct with filter_length == 1, which matches
 // nothing, and forces the fallback code to use the last (longer) set. So
 // we'll just bake that in here.
-function AfskDecoder(sampleRate, baud, onData) {
+function AfskDecoder(sampleRate, baud, onStatus) {
   this.sampleRate = sampleRate;
   this.baud = baud;
   this.emphasis = true; // TODO
-  this.onData = onData;
+  this.onStatus = onStatus;
 
   this.samplesPerBit = sampleRate / baud; // Not rounded! Floating point!
   this.td_filter = AfskFilters.getBandpassFilter(sampleRate, this.emphasis);
@@ -71,7 +71,7 @@ function AfskDecoder(sampleRate, baud, onData) {
 AfskDecoder.prototype = {
   sampleRate: 0,
   baud: 0,
-  onData: null, // callback
+  onStatus: null, // callback
   emphasis: false,
 
   freqHi: 2200,
@@ -109,7 +109,17 @@ AfskDecoder.prototype = {
   },
 
   packet: null,
-  data_carrier: false, // TODO: getter/setter, with onDataCarrier
+
+  _haveCarrier: false,
+  get data_carrier() {
+    return this._haveCarrier;
+  },
+  set data_carrier(val) {
+    var change = val != this._haveCarrier;
+    this._haveCarrier = val;
+    if (change)
+      this.onStatus("carrier", this._haveCarrier);
+  },
 
   dataAvailable: function(data) {
     var blob = new Blob([data]);
@@ -117,7 +127,7 @@ AfskDecoder.prototype = {
 
     fileReader.onload = function(e) {
       console.log("fileReader onload");
-      this.onData(e.target.result);
+      this.onStatus("data", e.target.result);
     }.bind(this);
 
     // This handles the utf8 conversion too.

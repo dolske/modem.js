@@ -75,7 +75,7 @@ function onMicData(event) {
   if (!decoder) {
     microphoneSampleRate = buffer.sampleRate;
     console.log("microphone sample rate is: " + microphoneSampleRate);
-    decoder = new AfskDecoder(microphoneSampleRate, BAUDRATE, onDecoderData);
+    decoder = new AfskDecoder(microphoneSampleRate, BAUDRATE, onDecoderStatus);
   }
 
   decoder.demodulate(samples);
@@ -143,10 +143,11 @@ function modulateData(data, sampleRate, completeCallback) {
   return dataBuffer;
 }
 
-function onDecoderData(data) {
-  console.log("DDDDD: got <" + data + ">");
+function onDecoderStatus(status, data) {
+  var foo = status + " <" + data + ">";
+  console.log("DDDDD: got " + foo);
   var output = document.getElementById("dataReceived");
-  output.value = data + "\n";
+  output.value += foo + "\n";
 }
 
 function demodulateData(buffer) {
@@ -154,7 +155,7 @@ function demodulateData(buffer) {
 
   var chunkSize = 4096; // number of samples to process at a time
 
-  decoder = new AfskDecoder(buffer.sampleRate, BAUDRATE, onDecoderData);
+  decoder = new AfskDecoder(buffer.sampleRate, BAUDRATE, onDecoderStatus);
 
   // some of this would go in a real onaudioavailable
   var samples = buffer.getChannelData(0);
@@ -167,6 +168,8 @@ function demodulateData(buffer) {
     var view = samples.subarray(begin, end);
     decoder.demodulate(view);
   }
+
+  // XXX we should let the decoder know we're done. And it should set carrier = false
 
   var timeEnd = performance.now();
   var timeElapsed = timeEnd - timeStart;
