@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" href="demo/demo.css">
+<script src="demo/demo-ui.js"></script>
+<script src="demo/demo.js"></script>
+
+<script src="afsk-filters.js"></script>
+<script src="afsk-encoder.js"></script>
+<script src="afsk-decoder.js"></script>
+</head><body><div id=header class=fixedSimple title="modem.js">
+                      __
+                     /\ \                           __
+  ___ ___     ___    \_\ \     __    ___ ___       /\_\    ____
+/' __` __`\  / __`\  /'_` \  /'__`\/' __` __`\     \/\ \  /',__\
+/\ \/\ \/\ \/\ \L\ \/\ \L\ \/\  __//\ \/\ \/\ \  __ \ \ \/\__, `\
+\ \_\ \_\ \_\ \____/\ \___,_\ \____\ \_\ \_\ \_\/\_\_\ \ \/\____/
+ \/_/\/_/\/_/\/___/  \/__,_ /\/____/\/_/\/_/\/_/\/_/\ \_\ \/___/
+                                                   \ \____/
+                                                    \/___/
+</div>
+<div id=subHeader class=fixed>
+ • An acoustic modem implemented with JavaScript and Web Audio •
+</div>
+<div id=info class=fixed>
+INSTRUCTIONS: Select a mode (send, receive, or loopback). Then
+press Power to begin sending and/or listening for data. Note that
+sending data is currently packetized into bursts, instead of a
+constant stream.
+</div>
+<br>
+<div id=modeContainer class=fixed>
+  <a href="#" id=send class=button>  Send  </a>
+  <a href="#" id=recv class=button>Receive </a>
+  <a href="#" id=loop class=button>Loopback</a>
+</div>
+<div id=modem class=fixedSimple>
+                   ________________________________________________________
+                  /                                                        \
+                 /                                                          \
+                ╒════════════════════════════════════════════════════════════╕
+                │ modem.js                                        <span id=baudrate></span> │
+<span id=inputName></span> ---► │ <span id=txLed class=led>▄▄</span>    <span id=rxLed class=led>▄▄</span>    <span id=cdLed class=led>▄▄</span>    <span id=dataLed class=led>▄▄▄▄</span>    <span id=whyLed class=led>▄▄▄</span>    <span id=micLed class=led>▄▄▄</span>    <span id=spkrLed class=led>▄▄▄▄</span>         <span id=powerLed class=led>▄▄▄</span>   │ ---► <span id=outputName></span>
+                │ TX    RX    CD    Data    Whm    Mic    Spkr        Power  │
+                ╘═══╤═╤════════════════════════════════════════════════╤═╤═══╛
+                    ┕━┙                                                ┕━┙
+▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+</div>
+<div id=actionContainer class=fixed>
+  <a href="#" id=options class=button>Options...</a>
+  <a href="#" id=power class=button>  Power  </a>
+</div>
+
+<div id=inputContainer class=fixed>
+<textarea cols=60 rows=7 placeholder="Type text to transmit here."></textarea>
+</div>
+<div id=outputContainer class=fixed>
+┊ ┊                                                                                  ┊ ┊
+│o│ 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789  │o│
+│ │                                                                                  │ │
+│o│                                                                                  │o│
+│ │                                                                                  │ │
+│o│                                                                                  │o│
+│ │                                                                                  │ │
+│o│                                                                                  │o│
+│ │                                                                                  │ │
+│o│                                                                                  │o│
+│ │                                                                                  │ │
+│o│                                                                                  │o│
+┊ ┊                                                                                  ┊ ┊
+</div>
+<br>
+<div id=footer class=fixed>By Justin Dolske: <a href="https://dolske.wordpress.com/">Blog post</a> -- <a href="https://github.com/dolske/modem.js">Source Code</a> -- <a href="http://dolske.net/hacks/modem.js/demo.html">Demo</a>
+</div>
+<br>
+<script>
+ui.init();
+</script>
+</body>
+</html>

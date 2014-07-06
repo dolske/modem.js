@@ -1,0 +1,97 @@
+@font-face {
+  font-family: "FixedSys";
+  src: url("Fixedsys500c.woff");
+}
+
+body {
+  margin-top: 0;
+  color: #bbb;
+  background-color: #000084;
+}
+
+.fixed {
+  white-space: pre;
+  font-family: FixedSys, monospace;
+}
+/* FixedSys only has basic ASCII, mixing with fallback causes
+ * alignment issues due to differing character widths.
+ */
+.fixedSimple {
+  white-space: pre;
+  font-family: monospace;
+}
+
+.button {
+  padding: 1ch;
+  color: black;
+  background-color: #bbb;
+  box-shadow: 10px 10px 0px black;
+
+  /* Avoid selecting text when clicking rapidly. */
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+.button[selected] {
+  color: white;
+  background-color: #00aa00;
+}
+.button:before { content: "  "; }
+.button:after  { content: "  "; }
+.button[selected]:before { content: "> "; }
+.button[selected]:after  { content: " <"; }
+
+#power:not([selected]) {
+  background-color: #c00;
+}
+
+#header {
+  padding-left: 120px; /* XXX center me */
+  color: white;
+}
+#subHeader {
+  padding-left: 90px; /* XXX center me */
+  color: white;
+}
+
+#info {
+  color: #fefe54;
+}
+
+#footer {
+  padding: 5px;
+  background-color: purple;
+  color: white;
+}
+#footer > a:visited, #footer > a:link {
+  text-decoration: underline;
+  color: white;
+}
+#modeContainer, #actionContainer {
+  width: 760px; /* XXX center me */
+  display: flex;
+  justify-content: space-around;
+}
+
+
+/* ********** */
+
+.led {
+  color: black;
+}
+.led[lit] {
+  color: red;
+}
+
+/* ********** */
+
+#outputContainer {
+  max-height: 10em;
+  overflow: scroll;
+}
+
+#inputContainer > textarea {
+  color: white;
+  background-color: black;
+  font-family: FixedSys, monospace;
+}
