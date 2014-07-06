@@ -121,6 +121,11 @@ function modulateData(data, sampleRate, completeCallback) {
 }
 
 function onDecoderStatus(status, data) {
+  if (status == "carrier") {
+    console.log("<CD>: " + data);
+    ui.setCarrierDetect(data);
+    return;
+  }
   var foo = status + " <" + data + ">";
   console.log("DDDDD: got " + foo);
   var output = document.getElementById("outputContainer");

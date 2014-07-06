@@ -105,6 +105,13 @@ var ui = {
     alert("TODO!");
   },
 
+  setCarrierDetect: function(detected) {
+    if (detected)
+      this.cdLed.setAttribute("lit", "");
+    else
+      this.cdLed.removeAttribute("lit");
+  },
+
   setBaudRate: function(baud) {
     var padding = "";
     if (baud < 10000) padding += " ";
