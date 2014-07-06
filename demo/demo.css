@@ -26,6 +26,7 @@ body {
   color: black;
   background-color: #bbb;
   box-shadow: 10px 10px 0px black;
+  text-decoration: none;
 
   /* Avoid selecting text when clicking rapidly. */
   -moz-user-select: none;
