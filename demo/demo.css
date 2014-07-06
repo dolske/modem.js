@@ -15,6 +15,15 @@ body {
 }
 /* FixedSys only has basic ASCII, mixing with fallback causes
  * alignment issues due to differing character widths.
+ *
+ * XXX Ugh. Just "monospace" works fine in Firefox, but has alignment
+ * issues in Chrome (both OS X). Devtools for both show a mix of
+ * actual fonts being used, tricky to select an explicit set that
+ * aligns properly. Note that some combinations are close to
+ * working, but are actually a few pixels off (causing vertical bars
+ * to misalign slightly across rows).
+ * "Courier New, Menlo" seems to work for Chrome+Firefox on OS X, but
+ * makes both worse on Android. >:(
  */
 .fixedSimple {
   white-space: pre;
