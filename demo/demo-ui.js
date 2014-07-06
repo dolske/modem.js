@@ -1,4 +1,5 @@
 var ui = {
+  mode: null,
   powerState: false,
 
   init: function() {
@@ -44,6 +45,7 @@ var ui = {
   },
 
   onModeButton: function(mode) {
+    this.mode = mode;
     if (mode == "send") {
       this.sendButton.setAttribute("selected", "");
       this.recvButton.removeAttribute("selected");
@@ -88,6 +90,7 @@ var ui = {
   onPowerButton: function() {
     this.powerState = !this.powerState;
     if (this.powerState) {
+      runModem();
       this.powerLed.setAttribute("lit", "");
       this.powerButton.setAttribute("selected", "");
     } else {
