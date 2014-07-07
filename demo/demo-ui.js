@@ -9,6 +9,8 @@ var ui = {
 
     this.powerButton   = document.getElementById("power");
     this.optionsButton = document.getElementById("options");
+    this.textInput     = document.getElementById("textInput");
+    this.randomButton  = document.getElementById("randomButton");
 
     var self = this;
     this.sendButton.addEventListener("click",
@@ -22,6 +24,8 @@ var ui = {
       function(e) { self.onPowerButton(); e.preventDefault(); });
     this.optionsButton.addEventListener("click",
       function(e) { self.onOptionsButton(); e.preventDefault(); });
+    this.randomButton.addEventListener("click",
+      function(e) { self.onRandomText(); e.preventDefault(); });
 
     this.txLed    = document.getElementById("txLed");
     this.rxLed    = document.getElementById("rxLed");
@@ -103,6 +107,12 @@ var ui = {
 
   onOptionsButton: function() {
     alert("TODO!");
+  },
+
+  onRandomText: function() {
+    var text = randomIpsum() + "\n\n";
+    this.textInput.value += text;
+    // XXX scroll to bottom
   },
 
   setCarrierDetect: function(detected) {

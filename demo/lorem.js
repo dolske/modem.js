@@ -63,4 +63,6 @@ var LOREM_DATUM = [
 ];
 
 function randomIpsum() {
+  var index = Math.floor(Math.random() * LOREM_DATUM.length);
+  return LOREM_DATUM[index];
 }
