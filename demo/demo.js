@@ -14,13 +14,14 @@ function stahhhhp() {
   micSource.disconnect();
 }
 
-function runModem() {
+function runModem(text) {
   var dataBuffer;
 
   var mode = ui.mode;
 
   if (mode == "send" || mode == "loop") {
-    var text = ui.textInput.value;
+    if (!text)
+      text = ui.textInput.value;
 
     // XXX send something by default, but maybe we should wait for user to
     // type or click random text? Former is better for a simple demo, but...

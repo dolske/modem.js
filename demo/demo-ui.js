@@ -27,6 +27,8 @@ var ui = {
     this.randomButton.addEventListener("click",
       function(e) { self.onRandomText(); e.preventDefault(); });
 
+    this.textInput.addEventListener("input", function(e) { self.onTextInput(); });
+
     this.txLed    = document.getElementById("txLed");
     this.rxLed    = document.getElementById("rxLed");
     this.cdLed    = document.getElementById("cdLed");
@@ -109,10 +111,42 @@ var ui = {
     alert("TODO!");
   },
 
+  _inputTimer: null,
+  onTextInput: function() {
+     if (this._inputTimer) {
+       clearTimeout(this._inputTimer);
+     }
+     this._inputTimer = setTimeout(this.processTextInput.bind(this), 750);
+  },
+
+  _prevInput: "",
+  processTextInput: function() {
+    if (!this.powerState)
+      return;
+
+    var newInput = "";
+    var currInput = this.textInput.value;
+    // If the old input (previously sent) is still present, only
+    // send whatever has been appended. Otherwise, uhm, just resend
+    // the whole thing. Could just make this all a onkeypress handler,
+    // especially if we were streaming live, but will instead packetize.
+    if (currInput.indexOf(this._prevInput, 0) === 0) {
+      // currInput begins with prevInput
+      newInput = currInput.substring(this._prevInput.length, currInput.length);
+    } else {
+      newInput = currInput;
+    }
+
+    runModem(newInput);
+
+    this._prevInput = currInput;
+  },
+
   onRandomText: function() {
     var text = randomIpsum() + "\n\n";
     this.textInput.value += text;
     // XXX scroll to bottom
+    this.processTextInput();
   },
 
   setCarrierDetect: function(detected) {
