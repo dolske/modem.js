@@ -20,8 +20,15 @@ function runModem() {
   var mode = ui.mode;
 
   if (mode == "send" || mode == "loop") {
-    //dataBuffer = modulateData(sampleText1, speakerSampleRate, null);
-    dataBuffer = modulateData("abc123", speakerSampleRate, null);
+    var text = ui.textInput.value;
+
+    // XXX send something by default, but maybe we should wait for user to
+    // type or click random text? Former is better for a simple demo, but...
+    if (!text) {
+      ui.onRandomText();
+      text = ui.textInput.value;
+    }
+    dataBuffer = modulateData(text, speakerSampleRate, null);
 
     var b = dataBuffer.getChannelData(0);
     drawWaveformToCanvas(b, 0);
@@ -79,13 +86,6 @@ console.log("CRAP: " + e);
 function onMicError(e) {
   console.log("MicError: " + e);
 }
-
-var sampleText1 =
-        "It is an ancient Mariner, \u2603\n" +
-        "And he stoppeth one of three.\n" +
-        "'By thy long grey beard and glittering eye,\n" +
-        "Now wherefore stopp'st thou me?\n";
-
 
 // Due to webaudio constraints, we're encoding the entire output buffer in
 // one call. But I'm limiting that assumption to this function, so that in
