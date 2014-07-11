@@ -47,7 +47,7 @@ var ui = {
 
     // Set defaults
     this.onModeButton("loop");
-    this.setBaudRate(1200);
+    this.setBaudRate(BAUDRATE);
   },
 
   onModeButton: function(mode) {
