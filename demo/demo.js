@@ -3,8 +3,10 @@ var BAUDRATE = 1200;
 var encoder, decoder;
 var audioCtx = new AudioContext();
 var speakerSampleRate = audioCtx.sampleRate;
-var microphoneSampleRate;
+var inputSampleRate;
 var micSource, micStream;
+var inputURL;
+//inputURL = "demo/haxxorIpsum.wav";
 console.log("speakerSampleRate is " + speakerSampleRate);
 
 function stahhhhp() {
@@ -40,52 +42,93 @@ function runModem(text) {
   if (mode == "loop") {
     demodulateData(dataBuffer);
   } else if (mode == "recv") {
-    // microphone
-    if (navigator.mozGetUserMedia)
-      navigator.mozGetUserMedia({audio: true}, onMicStream, onMicError);
-    else if (navigator.webkitGetUserMedia)
-      navigator.webkitGetUserMedia({audio: true}, onMicStream, onMicError);
-    else
-      throw "no getUserMedia";
+    if (inputURL) {
+      startAudioFile(inputURL);
+    } else {
+      // microphone
+      if (navigator.mozGetUserMedia)
+        navigator.mozGetUserMedia({audio: true}, onMicInit, onMicError);
+      else if (navigator.webkitGetUserMedia)
+        navigator.webkitGetUserMedia({audio: true}, onMicInit, onMicError);
+      else
+        throw "no getUserMedia";
+    }
   }
 }
 
-function onMicData(event) {
+
+function onAudioProcess(event) {
   var buffer = event.inputBuffer;
-  var samples = buffer.getChannelData(0);
-  console.log("-- mic data (" + samples.length + " samples) --");
+  var samplesIn = buffer.getChannelData(0);
+  console.log("-- audioprocess data (" + samplesIn.length + " samples) --");
 
-  // XXX decoder needs the input sample rate, seems we can't explicitly get it
-  // before the first data buffer arrives? I hope it can't change...
+  // Can't really get at input file/microphone sample rate until first data.
   if (!decoder) {
-    microphoneSampleRate = buffer.sampleRate;
-    console.log("microphone sample rate is: " + microphoneSampleRate);
-    decoder = new AfskDecoder(microphoneSampleRate, BAUDRATE, onDecoderStatus);
+    inputSampleRate = buffer.sampleRate;
+    console.log("input sample rate is: " + inputSampleRate);
+    decoder = new AfskDecoder(inputSampleRate, BAUDRATE, onDecoderStatus);
   }
 
-  decoder.demodulate(samples);
+  decoder.demodulate(samplesIn);
+
+  // Copy input to output (needed to hear input files)
+  if (inputURL) {
+    var samplesOut = event.outputBuffer.getChannelData(0);
+    samplesOut.set(samplesIn);
+  }
 }
-function onMicStream(stream) {
+
+function onMicInit(stream) {
   console.log("-- onMicStream --");
   micStream = stream;
-try {
   micSource = audioCtx.createMediaStreamSource(stream);
 
   var afskNode = audioCtx.createScriptProcessor(8192); // buffersize, input channels, output channels;
   // XXX is there a gecko bug here if numSamples not evenly divisible by buffersize?
   micSource.connect(afskNode);
-  afskNode.addEventListener("audioprocess", onMicData);
+  afskNode.addEventListener("audioprocess", onAudioProcess);
   // XXX Chrome seems to require connecting to a destination, or else
   // audiodata events don't fire (the script processor needs to be created
   // with output channels too)
   afskNode.connect(audioCtx.destination);
   console.log("onMicStream done 3");
-} catch(e) {
-console.log("CRAP: " + e);
 }
-}
+
 function onMicError(e) {
   console.log("MicError: " + e);
+}
+
+
+// XXX this seems to be completely broken in Firefox. The audioprocess events
+// start firing, but there is no data (silence). Tried waiting for the element
+// to fire loadeddata, no joy. Verified that the element can play an example
+// input, it just never starts playing with this code.
+// XXX Works great in Chrome!
+function startAudioFile(inputURL) {
+  var inputAudio = document.getElementById("inputAudio");
+
+  inputAudio.addEventListener("error", onInputAudioError);
+  inputAudio.pause();
+  //inputAudio.currentTime = 0;
+  inputAudio.setAttribute("src", inputURL);
+
+  var audioSource = audioCtx.createMediaElementSource(inputAudio);
+
+  var afskNode = audioCtx.createScriptProcessor(8192); // buffersize, input channels, output channels;
+  // XXX is there a gecko bug here if numSamples not evenly divisible by buffersize?
+  audioSource.connect(afskNode);
+  afskNode.addEventListener("audioprocess", onAudioProcess);
+  // XXX Chrome seems to require connecting to a destination, or else
+  // audiodata events don't fire (the script processor needs to be created
+  // with output channels too)
+  afskNode.connect(audioCtx.destination);
+
+  inputAudio.play();
+  console.log("startAudioFile playing " + inputURL);
+}
+
+function onInputAudioError(e) {
+  console.log("inputAudio error: " + e);
 }
 
 // Due to webaudio constraints, we're encoding the entire output buffer in
