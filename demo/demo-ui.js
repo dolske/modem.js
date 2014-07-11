@@ -7,10 +7,11 @@ var ui = {
     this.recvButton = document.getElementById("recv");
     this.loopButton = document.getElementById("loop");
 
-    this.powerButton   = document.getElementById("power");
-    this.optionsButton = document.getElementById("options");
-    this.textInput     = document.getElementById("textInput");
-    this.randomButton  = document.getElementById("randomButton");
+    this.powerButton     = document.getElementById("power");
+    this.optionsButton   = document.getElementById("options");
+    this.optionsOKButton = document.getElementById("optionsOK");
+    this.textInput       = document.getElementById("textInput");
+    this.randomButton    = document.getElementById("randomButton");
 
     var self = this;
     this.sendButton.addEventListener("click",
@@ -22,6 +23,8 @@ var ui = {
 
     this.powerButton.addEventListener("click",
       function(e) { self.onPowerButton(); e.preventDefault(); });
+    this.optionsOKButton.addEventListener("click",
+      function(e) { self.onOptionsButton(); e.preventDefault(); });
     this.optionsButton.addEventListener("click",
       function(e) { self.onOptionsButton(); e.preventDefault(); });
     this.randomButton.addEventListener("click",
@@ -42,8 +45,9 @@ var ui = {
     this.outputName = document.getElementById("outputName");
     this.baudRate = document.getElementById("baudrate");
 
-    this.inputContainer  = document.getElementById("inputContainer");
-    this.outputContainer = document.getElementById("outputContainer");
+    this.inputContainer   = document.getElementById("inputContainer");
+    this.outputContainer  = document.getElementById("outputContainer");
+    this.optionsContainer = document.getElementById("optionsContainer");
 
     // Set defaults
     this.onModeButton("loop");
@@ -107,8 +111,15 @@ var ui = {
     // TODO: something useful :)
   },
 
+  _optionsHidden: true,
   onOptionsButton: function() {
-    alert("TODO!");
+    // Just toggle visibility. Seems .hidden doesn't work with flex or pos:fixed?
+    var div = this.optionsContainer
+    this._optionsHidden = !this._optionsHidden;
+    if (this._optionsHidden)
+      div.setAttribute("hidden", "");
+    else
+      div.removeAttribute("hidden");
   },
 
   _inputTimer: null,
