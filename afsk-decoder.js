@@ -12,7 +12,7 @@ Packet.prototype = {
   MAX_SIZE: 16384, // XXX I'm lazy, this should just realloc.
 
   addByte: function(val) {
-    console.log("Packet: addByte[" + this.dataSize + "] = " + val);
+    console.log("Packet: addByte[" + this.dataSize + "] = " + String.fromCharCode(val) + " / " + val.toString(16));
     this.data[this.dataSize++] = val;
     // XXX skipped some CRC stuff
     return true;
