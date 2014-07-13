@@ -43,13 +43,13 @@ var ui = {
     this.baud1200 = document.getElementById("baud1200");
 
     this.baud50.addEventListener("click",
-      function(e) { self.onBaud(50); e.preventDefault(); });
+      function(e) { self.onBaud(e.currentTarget); e.preventDefault(); });
     this.baud150.addEventListener("click",
-      function(e) { self.onBaud(150); e.preventDefault(); });
+      function(e) { self.onBaud(e.currentTarget); e.preventDefault(); });
     this.baud300.addEventListener("click",
-      function(e) { self.onBaud(300); e.preventDefault(); });
+      function(e) { self.onBaud(e.currentTarget); e.preventDefault(); });
     this.baud1200.addEventListener("click",
-      function(e) { self.onBaud(1200); e.preventDefault(); });
+      function(e) { self.onBaud(e.currentTarget); e.preventDefault(); });
 
 
     this.inputSource0 = document.getElementById("inputSource0");
@@ -89,7 +89,7 @@ var ui = {
 
     // Set defaults
     this.onModeButton("loop");
-    this.onBaud(baudrate);
+    this.onBaud(this.baud1200);
     this.onInputSource(this.inputSource0);
   },
 
@@ -136,25 +136,18 @@ var ui = {
     }
   },
 
-  onBaud: function(baud) {
-    baudrate = baud;
-    this.setBaudRate(baud);
+  onBaud: function(targetNode) {
+    var baud = targetNode.getAttribute("value");
 
     this.baud50.removeAttribute("checked");
     this.baud150.removeAttribute("checked");
     this.baud300.removeAttribute("checked");
     this.baud1200.removeAttribute("checked");
 
-    if (baud == 50)
-      this.baud50.setAttribute("checked", "");
-    else if (baud == 150)
-      this.baud150.setAttribute("checked", "");
-    else if (baud == 300)
-      this.baud300.setAttribute("checked", "");
-    else if (baud == 1200)
-      this.baud1200.setAttribute("checked", "");
-    else
-      alert("UI error: dunno how to select baud " + baud);
+    targetNode.setAttribute("checked", "");
+
+    this.setBaudRate(baud);
+    baudrate = baud; // global
   },
 
   onInputSource: function(targetNode) {

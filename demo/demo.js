@@ -1,5 +1,4 @@
-var baudrate = 1200;
-
+var baudrate; // initialized to 1200 by UI
 var encoder, decoder;
 var audioCtx = new AudioContext();
 var speakerSampleRate = audioCtx.sampleRate;
