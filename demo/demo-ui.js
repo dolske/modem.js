@@ -104,6 +104,7 @@ var ui = {
       this.powerLed.setAttribute("lit", "");
       this.powerButton.setAttribute("selected", "");
     } else {
+      stahhhhp();
       this.powerLed.removeAttribute("lit");
       this.powerButton.removeAttribute("selected");
     }

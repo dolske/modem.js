@@ -4,7 +4,7 @@ var encoder, decoder;
 var audioCtx = new AudioContext();
 var speakerSampleRate = audioCtx.sampleRate;
 var inputSampleRate;
-var micSource, micStream;
+var afskNode, audioSource, micStream;
 var inputURL;
 //inputURL = "demo/haxxorIpsum.wav";
 //inputURL = "demo/pass_0513_packet.wav";
@@ -13,10 +13,17 @@ var inputURL;
 console.log("speakerSampleRate is " + speakerSampleRate);
 
 function stahhhhp() {
-  // XXX this doesnt seem to work? I keep getting audiodata events.
   console.log("stopping");
-  micStream.stop();
-  micSource.disconnect();
+  if (afskNode) {
+    afskNode.removeEventListener("audioprocess", onAudioProcess);
+    afskNode.disconnect();
+  }
+  if (micStream)
+    micStream.stop();
+  if (audioSource)
+    audioSource.disconnect();
+
+  afskNode = micStream = audioSource = null;
 }
 
 function runModem(text) {
@@ -84,11 +91,11 @@ function onAudioProcess(event) {
 function onMicInit(stream) {
   console.log("-- onMicStream --");
   micStream = stream;
-  micSource = audioCtx.createMediaStreamSource(stream);
+  audioSource = audioCtx.createMediaStreamSource(stream);
 
-  var afskNode = audioCtx.createScriptProcessor(8192); // buffersize, input channels, output channels;
+  afskNode = audioCtx.createScriptProcessor(8192); // buffersize, input channels, output channels;
   // XXX is there a gecko bug here if numSamples not evenly divisible by buffersize?
-  micSource.connect(afskNode);
+  audioSource.connect(afskNode);
   afskNode.addEventListener("audioprocess", onAudioProcess);
   // XXX Chrome seems to require connecting to a destination, or else
   // audiodata events don't fire (the script processor needs to be created
@@ -111,13 +118,16 @@ function startAudioFile(inputURL) {
   var inputAudio = document.getElementById("inputAudio");
 
   inputAudio.addEventListener("error", onInputAudioError);
+  inputAudio.addEventListener("ended", function() {
+    setTimeout(function() { ui.onPowerButton();}, 500 );
+  });
   inputAudio.pause();
   //inputAudio.currentTime = 0;
   inputAudio.setAttribute("src", inputURL);
 
   var audioSource = audioCtx.createMediaElementSource(inputAudio);
 
-  var afskNode = audioCtx.createScriptProcessor(8192); // buffersize, input channels, output channels;
+  afskNode = audioCtx.createScriptProcessor(8192); // buffersize, input channels, output channels;
   // XXX is there a gecko bug here if numSamples not evenly divisible by buffersize?
   audioSource.connect(afskNode);
   afskNode.addEventListener("audioprocess", onAudioProcess);
