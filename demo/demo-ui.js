@@ -36,10 +36,12 @@ var ui = {
     this.debugCheck.addEventListener("click",
       function(e) { self.onDebug(); e.preventDefault(); });
 
+
     this.baud50   = document.getElementById("baud50");
     this.baud150  = document.getElementById("baud150");
     this.baud300  = document.getElementById("baud300");
     this.baud1200 = document.getElementById("baud1200");
+
     this.baud50.addEventListener("click",
       function(e) { self.onBaud(50); e.preventDefault(); });
     this.baud150.addEventListener("click",
@@ -48,6 +50,25 @@ var ui = {
       function(e) { self.onBaud(300); e.preventDefault(); });
     this.baud1200.addEventListener("click",
       function(e) { self.onBaud(1200); e.preventDefault(); });
+
+
+    this.inputSource0 = document.getElementById("inputSource0");
+    this.inputSource1 = document.getElementById("inputSource1");
+    this.inputSource2 = document.getElementById("inputSource2");
+    this.inputSource3 = document.getElementById("inputSource3");
+    this.inputSource4 = document.getElementById("inputSource4");
+
+    this.inputSource0.addEventListener("click",
+      function(e) { self.onInputSource(e.currentTarget); e.preventDefault(); });
+    this.inputSource1.addEventListener("click",
+      function(e) { self.onInputSource(e.currentTarget); e.preventDefault(); });
+    this.inputSource2.addEventListener("click",
+      function(e) { self.onInputSource(e.currentTarget); e.preventDefault(); });
+    this.inputSource3.addEventListener("click",
+      function(e) { self.onInputSource(e.currentTarget); e.preventDefault(); });
+    this.inputSource4.addEventListener("click",
+      function(e) { self.onInputSource(e.currentTarget); e.preventDefault(); });
+
 
     this.txLed    = document.getElementById("txLed");
     this.rxLed    = document.getElementById("rxLed");
@@ -69,6 +90,7 @@ var ui = {
     // Set defaults
     this.onModeButton("loop");
     this.onBaud(baudrate);
+    this.onInputSource(this.inputSource0);
   },
 
   onModeButton: function(mode) {
@@ -133,6 +155,26 @@ var ui = {
       this.baud1200.setAttribute("checked", "");
     else
       alert("UI error: dunno how to select baud " + baud);
+  },
+
+  onInputSource: function(targetNode) {
+    this.inputSource0.removeAttribute("checked");
+    this.inputSource1.removeAttribute("checked");
+    this.inputSource2.removeAttribute("checked");
+    this.inputSource3.removeAttribute("checked");
+    this.inputSource4.removeAttribute("checked");
+
+    targetNode.setAttribute("checked", "");
+
+    var source = targetNode.getAttribute("value");
+    console.log("Input source set to " + (source ? source : "microphone"));
+    inputURL = source;
+
+    if (targetNode.hasAttribute("baud")) {
+      inputBaud = targetNode.getAttribute("baud");
+      this.onBaud(inputBaud);
+      console.log("Input source set baud rate to " + inputBaud);
+    }
   },
 
   onPowerButton: function() {

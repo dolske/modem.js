@@ -82,9 +82,12 @@ constant stream.
 
 Baud rate:  <a href="#" id=baud50 class=radio>50</a>  <a href="#" id=baud150 class=radio>150</a>  <a href="#" id=baud300 class=radio>300</a>  <a href="#" id=baud1200 class=radio>1200</a>
 
-Input: (*) Microphone
-       ( ) Audio file URL...
-           <input id=inputURL>
+Input:
+  <a href="#" id=inputSource0 value="" class=radio>Microphone</a>
+  <a href="#" id=inputSource1 baud=300  value="demo/haxxorIpsum.wav" class=radio>Recorded mic (haxxorIpsum)</a>
+  <a href="#" id=inputSource2 baud=1200 value="demo/wikipedia_AFSK_1200_baud.ogg" class=radio>Wikipedia AFSK example</a>
+  <a href="#" id=inputSource3 baud=1200 value="demo/pass_0513_packet.wav" class=radio>KickSat AX.25 packet</a>
+  <a href="#" id=inputSource4 baud=1200 value="demo/CallerID-1.wav" class=radio>Caller ID</a>
 
 <a href="#" id=debugCheck class=checkbox>Debug console logging</a>
 <br><br><br>

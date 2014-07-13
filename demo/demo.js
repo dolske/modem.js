@@ -5,11 +5,7 @@ var audioCtx = new AudioContext();
 var speakerSampleRate = audioCtx.sampleRate;
 var inputSampleRate;
 var afskNode, audioSource, micStream;
-var inputURL;
-//inputURL = "demo/haxxorIpsum.wav";
-//inputURL = "demo/pass_0513_packet.wav";
-//inputURL = "demo/wikipedia_AFSK_1200_baud.ogg";
-//inputURL = "demo/CallerID-1.wav";
+var inputURL; // microphone, if not set
 console.log("speakerSampleRate is " + speakerSampleRate);
 
 function stahhhhp() {
