@@ -1,4 +1,4 @@
-var BAUDRATE = 1200;
+var baudrate = 1200;
 
 var encoder, decoder;
 var audioCtx = new AudioContext();
@@ -76,7 +76,7 @@ function onAudioProcess(event) {
   if (!decoder) {
     inputSampleRate = buffer.sampleRate;
     console.log("input sample rate is: " + inputSampleRate);
-    decoder = new AfskDecoder(inputSampleRate, BAUDRATE, onDecoderStatus);
+    decoder = new AfskDecoder(inputSampleRate, baudrate, onDecoderStatus);
   }
 
   decoder.demodulate(samplesIn);
@@ -153,7 +153,7 @@ function modulateData(data, sampleRate, completeCallback) {
 
   var chunkSize = 4096; //number of samples to generate at a time
 
-  encoder = new AfskEncoder(data, sampleRate, BAUDRATE);
+  encoder = new AfskEncoder(data, sampleRate, baudrate);
 
   var numSamples = encoder.numSamplesRequired;
   //console.log("numSamplesRequired: " + numSamples);
@@ -194,7 +194,7 @@ function demodulateData(buffer) {
 
   var chunkSize = 4096; // number of samples to process at a time
 
-  decoder = new AfskDecoder(buffer.sampleRate, BAUDRATE, onDecoderStatus);
+  decoder = new AfskDecoder(buffer.sampleRate, baudrate, onDecoderStatus);
 
   // some of this would go in a real onaudioavailable
   var samples = buffer.getChannelData(0);

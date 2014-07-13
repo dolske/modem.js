@@ -60,6 +60,16 @@ body {
   font-family: monospace;
 }
 
+.checkbox, .radio {
+  display: inline-block;
+  color: inherit;
+  text-decoration: none;
+}
+.checkbox:before { content: "[ ] " }
+.checkbox[checked]:before { content: "[X] " }
+.radio:before { content: "( ) " }
+.radio[checked]:before { content: "(*) " }
+
 .button {
   padding: 1ch;
   color: black;

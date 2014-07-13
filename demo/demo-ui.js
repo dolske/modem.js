@@ -32,6 +32,23 @@ var ui = {
 
     this.textInput.addEventListener("input", function(e) { self.onTextInput(); });
 
+    this.debugCheck = document.getElementById("debugCheck");
+    this.debugCheck.addEventListener("click",
+      function(e) { self.onDebug(); e.preventDefault(); });
+
+    this.baud50   = document.getElementById("baud50");
+    this.baud150  = document.getElementById("baud150");
+    this.baud300  = document.getElementById("baud300");
+    this.baud1200 = document.getElementById("baud1200");
+    this.baud50.addEventListener("click",
+      function(e) { self.onBaud(50); e.preventDefault(); });
+    this.baud150.addEventListener("click",
+      function(e) { self.onBaud(150); e.preventDefault(); });
+    this.baud300.addEventListener("click",
+      function(e) { self.onBaud(300); e.preventDefault(); });
+    this.baud1200.addEventListener("click",
+      function(e) { self.onBaud(1200); e.preventDefault(); });
+
     this.txLed    = document.getElementById("txLed");
     this.rxLed    = document.getElementById("rxLed");
     this.cdLed    = document.getElementById("cdLed");
@@ -51,7 +68,7 @@ var ui = {
 
     // Set defaults
     this.onModeButton("loop");
-    this.setBaudRate(BAUDRATE);
+    this.onBaud(baudrate);
   },
 
   onModeButton: function(mode) {
@@ -97,6 +114,27 @@ var ui = {
     }
   },
 
+  onBaud: function(baud) {
+    baudrate = baud;
+    this.setBaudRate(baud);
+
+    this.baud50.removeAttribute("checked");
+    this.baud150.removeAttribute("checked");
+    this.baud300.removeAttribute("checked");
+    this.baud1200.removeAttribute("checked");
+
+    if (baud == 50)
+      this.baud50.setAttribute("checked", "");
+    else if (baud == 150)
+      this.baud150.setAttribute("checked", "");
+    else if (baud == 300)
+      this.baud300.setAttribute("checked", "");
+    else if (baud == 1200)
+      this.baud1200.setAttribute("checked", "");
+    else
+      alert("UI error: dunno how to select baud " + baud);
+  },
+
   onPowerButton: function() {
     this.powerState = !this.powerState;
     if (this.powerState) {
@@ -122,6 +160,18 @@ var ui = {
     else
       div.removeAttribute("hidden");
   },
+
+  _debugChecked: false,
+  onDebug: function() {
+    this._debugChecked = !this._debugChecked;
+    if (this._debugChecked)
+      this.debugCheck.setAttribute("checked", "");
+    else
+      this.debugCheck.removeAttribute("checked");
+
+    // TODO: actually make logging conditional on this :)
+  },
+
 
   _inputTimer: null,
   onTextInput: function() {
