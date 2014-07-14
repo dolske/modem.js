@@ -165,7 +165,13 @@ var ui = {
 
     if (targetNode.hasAttribute("baud")) {
       inputBaud = targetNode.getAttribute("baud");
-      this.onBaud(inputBaud);
+      if (inputBaud == 1200)
+        this.onBaud(this.baud1200);
+      else if (inputBaud == 300)
+        this.onBaud(this.baud300);
+      else
+        alert("ERP! Can't sent baud " + inputBaud + " for this source!");
+
       console.log("Input source set baud rate to " + inputBaud);
     }
   },
