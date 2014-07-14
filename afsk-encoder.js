@@ -2,7 +2,7 @@ function AfskEncoder(data, sampleRate, baud) {
   // Convert JavaScript's 16bit UCS2 characters to a UTF8 string, so we can
   // treat data[x] as an 8-bit byte for transmission.
   var utf8data = unescape(encodeURIComponent(data));
-  this.symbolData = this.expandFlags(utf8data);
+  this.expandFlags(utf8data); // into this.symbolData + numResidueBits
   // can convert back with decodeURIComponent(escape(utf8data))
   this.sampleRate = sampleRate;
   this.baud = baud;
@@ -54,6 +54,8 @@ function AfskEncoder(data, sampleRate, baud) {
 }
 AfskEncoder.prototype = {
   symbolData: null,
+  numResidueBits: 0,
+
   sampleRate: 0,
   baud: 0,
 
@@ -102,13 +104,99 @@ AfskEncoder.prototype = {
    * _byte_, * eg 0x7E --> 0x7D, 0x5E and 0x7D --> 0x7D, 0x5D
    */
   expandFlags: function(utf8data) {
-    // TODO!
-    var buf = new Uint8Array(utf8data.length);
-    var i = buf.length;
-    for (var i = 0; i < buf.length; i++)
-      buf[i] = utf8data.charCodeAt(i);
-    return buf;
+    var maxLength = Math.ceil(utf8data.length * 6 / 5);
+    var buf = new Uint8Array(maxLength);
+
+    var i = 0;
+    var sequentialOnes = 0;
+    var residueBits = 0;
+    var numResidueBits = 0;
+
+    for (var c = 0; c < utf8data.length; c++) {
+      residueBits = residueBits | (utf8data.charCodeAt(c) << numResidueBits);
+      numResidueBits += 8;
+      //console.log("Loop input is: 0x" + residueBits.toString(16) + " (len = " + numResidueBits + " bits)");
+
+      // Worst case: we had 7 residue bits + 8 new bits (now 15). Could need to stuff
+      // 2 bits (if sequentialOnes = 4, first bit from new utf8data bytes
+      // causes a stuff, in remaining 7 new bits could have one more stuff)
+
+      // We don't start at index 0, since we've already processed these bits
+      // in the last loop.
+      for (var b = (numResidueBits - 8); b < numResidueBits; b++) {
+        if (residueBits & (1 << b))
+          sequentialOnes++;
+        else
+          sequentialOnes = 0;
+
+        //console.log("ch[" + c + "] bit[" + b + "], seqOnes=" + sequentialOnes);
+
+        if (sequentialOnes == 5) {
+          sequentialOnes = 0;
+          //console.log("-- stuffing! --");
+          // piece together an expanded residueBits
+          var hiMask = 0x1FFFF << (b + 1)
+          var hiBits = (residueBits & hiMask) << 1;
+          //console.log("hiMask = " + hiMask.toString(16));
+          //console.log("hiBits = " + hiBits.toString(16));
+
+          var loMask = ~hiMask & 0xFFFFF;
+          var loBits = residueBits & loMask;
+          //console.log("loMask = " + loMask.toString(16));
+          //console.log("loBits = " + loBits.toString(16));
+
+          residueBits = hiBits | loBits; // 0-bit in between
+          // console.log("resBits= " + residueBits.toString(16));
+
+          // Skip over the bit we just stuffed
+          b++;
+          numResidueBits++;
+        }
+      }
+
+      // Worst case: we had 15 residue bits, now have 17 due to stuffing.
+
+      // Always have at least 8 bits
+      buf[i++] = residueBits & 0xFF;
+      numResidueBits -= 8;
+      residueBits >>>= 8;
+
+      // If we have a whole byte's worth of residue, emit it now.
+      if (numResidueBits >= 8) {
+        buf[i++] = residueBits & 0xFF;
+        residueBits >>>= 8;
+        numResidueBits -= 8;
+      }
+
+      // If we _still_ have a whole byte's worth of residue, emit it now.
+      if (numResidueBits >= 8) {
+        buf[i++] = residueBits & 0xFF;
+        residueBits >>>= 8;
+        numResidueBits -= 8;
+      }
+
+      //console.log("Loop residue is: 0x" + residueBits.toString(16) + " (len = " + numResidueBits + ") @ " + i);
+    }
+
+    if (numResidueBits) {
+      buf[i++] = residueBits & 0xFF;
+    }
+
+    // Trim view to the space we used.
+    buf = buf.subarray(0, i);
+    //console.log("Output buffer: " + this.dumpBuffer(buf));
+
+    this.symbolData = buf;
+    this.numResidueBits = numResidueBits;
   },
+
+  dumpBuffer: function(buf) {
+    var out = "";
+    for (var i = 0; i < buf.length; i++)
+      out += "0x" + buf[i].toString(16) + ",";
+    return out;
+  },
+
 
   modulate: function(samples) {
     var state = this.state;
@@ -160,8 +248,15 @@ AfskEncoder.prototype = {
           state.currentByte = this.TRAILER_BYTE;
           state.unprocessedBits = 8;
         } else if (state.current == state.DATA) {
-          state.currentByte = this.symbolData[this.symbolData.length - state.unprocessedBytes];
+          var b = this.symbolData.length - state.unprocessedBytes;
+          state.currentByte = this.symbolData[b];
           state.unprocessedBits = 8;
+          // If we're processing the last byte of data, it might be a partial
+          // byte due to bit flag expansion.
+          if (b == this.symbolData.length - 1 && this.numResidueBits) {
+            console.log("partial last data byte (" + this.numResidueBits + " bits)");
+            state.unprocessedBits = this.numResidueBits;
+          }
         } else {
           throw "unexpected next byte state";
         }
