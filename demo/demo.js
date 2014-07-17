@@ -178,10 +178,11 @@ function onDecoderStatus(status, data) {
     ui.setCarrierDetect(data);
     return;
   }
-  var foo = status + " <" + data + ">";
-  console.log("DDDDD: got " + foo);
-  var output = document.getElementById("outputContainer");
-  output.textContent += foo + "\n";
+
+  if (status == "data") {
+    console.log("DDDDD: got <" + data + ">");
+    ui.printTextLine(data);
+  }
 }
 
 function demodulateData(buffer) {

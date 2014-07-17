@@ -91,6 +91,8 @@ var ui = {
     this.onModeButton("loop");
     this.onBaud(this.baud1200);
     this.onInputSource(this.inputSource0);
+    this.printTextLine("Welcome to modem.js! Received data follows:");
+    this.printTextLine("");
   },
 
   onModeButton: function(mode) {
@@ -266,5 +268,25 @@ var ui = {
     if (baud < 100)   padding += " ";
     if (baud < 10)    padding += " ";
     this.baudRate.textContent = padding + baud + " baud";
-  }
+  },
+
+  padText: function(text, width) {
+    while (text.length < width)
+      text += " ";
+    return text;
+  },
+
+  _lineNum: 0,
+  printTextLine: function(text) {
+    var lines = text.split('\n');
+
+    for (var i = 0; i < lines.length; i++) {
+      var chit = (this._lineNum++ % 2) ? "│ │" : "│o│";
+      var line = chit + " " + this.padText(lines[i], 80) + " " + chit + "\n";
+      this.outputContainer.textContent += line;
+    }
+
+    // Scroll to the bottom
+    this.outputContainer.scrollTop = this.outputContainer.scrollHeight;
+  },
 }
