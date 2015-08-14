@@ -1,5 +1,5 @@
 var createModem = require('./index.js')
-var modem = createModem({sample: 48000, baud: 250})
+var modem = createModem({sample: 44100, baud: 50})
 var mod = modem.modulate(process.argv[2])
-console.log(mod.length)
-var demod = modem.demodulate(mod)
+process.stdout.write(mod)
+// var demod = modem.demodulate(mod)
