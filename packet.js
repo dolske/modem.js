@@ -1,3 +1,4 @@
+var debug = require('debug')('packet')
 // from Packet.java
 //
 // Only methods used here are bytesWithoutCRC, addByte, terminate
@@ -14,21 +15,21 @@ Packet.prototype = {
   MAX_SIZE: 16384, // XXX I'm lazy, this should just realloc.
 
   addByte: function(val) {
-    //console.error("Packet: addByte[" + this.dataSize + "] = " + String.fromCharCode(val) + " / " + val.toString(16));
+    debug("Packet: addByte[" + this.dataSize + "] = " + String.fromCharCode(val) + " / " + val.toString(16));
     this.data[this.dataSize++] = val;
     // XXX skipped some CRC stuff
     return true;
   },
 
   terminate: function() {
-    //console.error("Packet: terminate!");
+    debug("Packet: terminate!");
     // nop
     // XXX skipped some CRC stuff
     return true;
   },
 
   bytesWithoutCRC: function() {
-    //console.error("Packet: bytesWithoutCRC");
+    debug("Packet: bytesWithoutCRC");
     // TODO
     return this.data.subarray(0, this.dataSize);
   },

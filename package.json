@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/dolske/modem.js#readme",
   "dependencies": {
-    "audiobuffer": "^0.2.0"
+    "audiobuffer": "^0.2.0",
+    "debug": "^2.2.0"
   }
 }

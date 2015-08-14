@@ -1,3 +1,4 @@
+var debug = require('debug')('encoder')
 module.exports = AfskEncoder
 function AfskEncoder(data, sampleRate, baud) {
   // Convert JavaScript's 16bit UCS2 characters to a UTF8 string, so we can
@@ -116,7 +117,7 @@ AfskEncoder.prototype = {
     for (var c = 0; c < utf8data.length; c++) {
       residueBits = residueBits | (utf8data.charCodeAt(c) << numResidueBits);
       numResidueBits += 8;
-      //console.error("Loop input is: 0x" + residueBits.toString(16) + " (len = " + numResidueBits + " bits)");
+      debug("Loop input is: 0x" + residueBits.toString(16) + " (len = " + numResidueBits + " bits)");
 
       // Worst case: we had 7 residue bits + 8 new bits (now 15). Could need to stuff
       // 2 bits (if sequentialOnes = 4, first bit from new utf8data bytes
@@ -130,21 +131,21 @@ AfskEncoder.prototype = {
         else
           sequentialOnes = 0;
 
-        //console.error("ch[" + c + "] bit[" + b + "], seqOnes=" + sequentialOnes);
+        debug("ch[" + c + "] bit[" + b + "], seqOnes=" + sequentialOnes);
 
         if (sequentialOnes == 5) {
           sequentialOnes = 0;
-          //console.error("-- stuffing! --");
+          debug("-- stuffing! --");
           // piece together an expanded residueBits
           var hiMask = 0x1FFFF << (b + 1)
           var hiBits = (residueBits & hiMask) << 1;
-          //console.error("hiMask = " + hiMask.toString(16));
-          //console.error("hiBits = " + hiBits.toString(16));
+          debug("hiMask = " + hiMask.toString(16));
+          debug("hiBits = " + hiBits.toString(16));
 
           var loMask = ~hiMask & 0xFFFFF;
           var loBits = residueBits & loMask;
-          //console.error("loMask = " + loMask.toString(16));
-          //console.error("loBits = " + loBits.toString(16));
+          debug("loMask = " + loMask.toString(16));
+          debug("loBits = " + loBits.toString(16));
 
           residueBits = hiBits | loBits; // 0-bit in between
           // console.error("resBits= " + residueBits.toString(16));
@@ -176,7 +177,7 @@ AfskEncoder.prototype = {
         numResidueBits -= 8;
       }
 
-      //console.error("Loop residue is: 0x" + residueBits.toString(16) + " (len = " + numResidueBits + ") @ " + i);
+      debug("Loop residue is: 0x" + residueBits.toString(16) + " (len = " + numResidueBits + ") @ " + i);
     }
 
     if (numResidueBits) {
@@ -185,7 +186,7 @@ AfskEncoder.prototype = {
 
     // Trim view to the space we used.
     buf = buf.subarray(0, i);
-    //console.error("Output buffer: " + this.dumpBuffer(buf));
+    debug("Output buffer: " + this.dumpBuffer(buf));
 
     this.symbolData = buf;
     this.numResidueBits = numResidueBits;
@@ -203,7 +204,7 @@ AfskEncoder.prototype = {
     var state = this.state;
     // actual start index of complete buffer (not just chunk);
     var actualOffset = samples.byteOffset / 4;
-    //console.error("-- modulate for " + samples.length + " samples @ " + actualOffset + "--");
+    debug("-- modulate for " + samples.length + " samples @ " + actualOffset + "--");
     if (state.current == state.IDLE)
       return;
 
@@ -231,7 +232,7 @@ AfskEncoder.prototype = {
             state.currentByte = this.TRAILER_BYTE;
             state.unprocessedBytes = this.trailerBytes - 1;
             state.unprocessedBits = 8;
-            //console.error("...recursing for state TRAILER...");
+            debug("...recursing for state TRAILER...");
             this.modulate(samples.subarray(i, samples.length));
           } else if (state.current == state.TRAILER) {
             state.current = state.IDLE;

@@ -1,6 +1,6 @@
 var Packet = require('./packet.js')
 var AfskFilters = require('./afsk-filters.js')
-
+var debug = require('debug')('decoder')
 // Not implementing: 8000 -> 16000 supersampling.
 //
 // Orig code takes a "filter_length" argument. Not sure what this was being
@@ -167,7 +167,7 @@ AfskDecoder.prototype = {
       var fdiff = this.filter(state.diff, state.j_cd, this.cd_filter);
 
       if (state.previous_fdiff * fdiff < 0 || state.previous_fdiff == 0) {
-////console.error("transition at sample " + i);
+debug("transition at sample " + i);
         // we found a transition
         var p = state.t - state.last_transition;
         state.last_transition = state.t;
@@ -202,10 +202,10 @@ AfskDecoder.prototype = {
           this.data_carrier = false;
           state.flag_count = 0;
         } else {
-////console.error("bits="+bits);
+debug("bits="+bits);
           if (bits == 7) {
             state.flag_count++;
-            //console.error("FLAG FOUND (count = " + state.flag_count + ") in state " + state.current);
+            debug("FLAG FOUND (count = " + state.flag_count + ") in state " + state.current);
             state.flag_separator_seen = false;
 
             state.data = 0;
@@ -234,7 +234,7 @@ AfskDecoder.prototype = {
                 break;
             }
           } else {
-////console.error("ok state is " + state.current);
+debug("ok state is " + state.current);
             switch (state.current) {
               case state.WAITING:
                 break;
