@@ -1,36 +1,5 @@
-// from Packet.java
-//
-// Only methods used here are bytesWithoutCRC, addByte, terminate
-function Packet() {
-  this.data = new Uint8Array(this.MAX_SIZE);
-  this.dataSize = 0;
-}
-Packet.prototype = {
-  data: null,
-  dataSize: 0,
-
-  MAX_SIZE: 16384, // XXX I'm lazy, this should just realloc.
-
-  addByte: function(val) {
-    console.log("Packet: addByte[" + this.dataSize + "] = " + String.fromCharCode(val) + " / " + val.toString(16));
-    this.data[this.dataSize++] = val;
-    // XXX skipped some CRC stuff
-    return true;
-  },
-
-  terminate: function() {
-    console.log("Packet: terminate!");
-    // nop
-    // XXX skipped some CRC stuff
-    return true;
-  },
-
-  bytesWithoutCRC: function() {
-    console.log("Packet: bytesWithoutCRC");
-    // TODO
-    return this.data.subarray(0, this.dataSize);
-  },
-};
+var Packet = require('./packet.js')
+var AfskFilters = require('./afsk-filters.js')
 
 // Not implementing: 8000 -> 16000 supersampling.
 //
@@ -43,6 +12,8 @@ Packet.prototype = {
 // The sample code's test construct with filter_length == 1, which matches
 // nothing, and forces the fallback code to use the last (longer) set. So
 // we'll just bake that in here.
+module.exports = AfskDecoder
+  
 function AfskDecoder(sampleRate, baud, onStatus) {
   this.sampleRate = sampleRate;
   this.baud = baud;
@@ -121,19 +92,6 @@ AfskDecoder.prototype = {
       this.onStatus("carrier", this._haveCarrier);
   },
 
-  dataAvailable: function(data) {
-    var blob = new Blob([data]);
-    var fileReader = new FileReader();
-
-    fileReader.onload = function(e) {
-      console.log("fileReader onload");
-      this.onStatus("data", e.target.result);
-    }.bind(this);
-
-    // This handles the utf8 conversion too.
-    fileReader.readAsText(blob);
-  },
-
   correlation: function(x , y, j) { // (float[] x, float[] y, int j)
     var c = 0.0;
     for (var i = 0; i < x.length; i++) {
@@ -209,7 +167,7 @@ AfskDecoder.prototype = {
       var fdiff = this.filter(state.diff, state.j_cd, this.cd_filter);
 
       if (state.previous_fdiff * fdiff < 0 || state.previous_fdiff == 0) {
-//console.log("transition at sample " + i);
+////console.error("transition at sample " + i);
         // we found a transition
         var p = state.t - state.last_transition;
         state.last_transition = state.t;
@@ -244,10 +202,10 @@ AfskDecoder.prototype = {
           this.data_carrier = false;
           state.flag_count = 0;
         } else {
-//console.log("bits="+bits);
+////console.error("bits="+bits);
           if (bits == 7) {
             state.flag_count++;
-            console.log("FLAG FOUND (count = " + state.flag_count + ") in state " + state.current);
+            //console.error("FLAG FOUND (count = " + state.flag_count + ") in state " + state.current);
             state.flag_separator_seen = false;
 
             state.data = 0;
@@ -268,7 +226,7 @@ AfskDecoder.prototype = {
                     //System.out.print(String.format("%ddB:%.02f:%.02f\n", 
                     //                          emphasis,f0_max/-f1_min,max_period_error));
                     //handler.handlePacket(packet.bytesWithoutCRC());
-                    this.dataAvailable(this.packet.bytesWithoutCRC());
+                    this.onStatus("data", this.packet.bytesWithoutCRC());
                     //System.out.println(""+(++decode_count)+": "+packet);
                 }
                 this.packet = null;
@@ -276,7 +234,7 @@ AfskDecoder.prototype = {
                 break;
             }
           } else {
-//console.log("ok state is " + state.current);
+////console.error("ok state is " + state.current);
             switch (state.current) {
               case state.WAITING:
                 break;

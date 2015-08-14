@@ -1,0 +1,22 @@
+{
+  "name": "modem.js",
+  "version": "1.0.0",
+  "description": "modem.js ========",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dolske/modem.js.git"
+  },
+  "author": "",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/dolske/modem.js/issues"
+  },
+  "homepage": "https://github.com/dolske/modem.js#readme",
+  "dependencies": {
+    "audiobuffer": "^0.2.0"
+  }
+}
