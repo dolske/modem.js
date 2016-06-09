@@ -190,7 +190,7 @@ function demodulateData(buffer) {
 
   var chunkSize = 4096; // number of samples to process at a time
 
-  decoder = new AfskDecoder(buffer.sampleRate, baudrate, onDecoderStatus);
+  decoder = new AfskDecoder(buffer.sampleRate, baudrate, onDecoderStatus, "bell");
 
   // some of this would go in a real onaudioavailable
   var samples = buffer.getChannelData(0);

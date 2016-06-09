@@ -43,10 +43,11 @@ Packet.prototype = {
 // The sample code's test construct with filter_length == 1, which matches
 // nothing, and forces the fallback code to use the last (longer) set. So
 // we'll just bake that in here.
-function AfskDecoder(sampleRate, baud, onStatus) {
+function AfskDecoder(sampleRate, baud, onStatus, mode) {
   this.sampleRate = sampleRate;
   this.baud = baud;
-  this.emphasis = true; // TODO
+  this.mode = this.setDecodeScheme(mode);
+  this.emphasis = this.mode == this.BELL_202; // in bell 202 one frequency is emphasized with 6db 
   this.onStatus = onStatus;
 
   this.samplesPerBit = sampleRate / baud; // Not rounded! Floating point!
@@ -74,6 +75,11 @@ AfskDecoder.prototype = {
   onStatus: null, // callback
   emphasis: false,
 
+  mode: 0,
+  BELL_202 : 0,
+  SOFT_MODEM : 1,
+  decoder: null, // Bell / SoftModem decoder function
+
   freqHi: 2200,
   freqLo: 1200,
   phaseIncrementFreqHi: 0,
@@ -88,6 +94,7 @@ AfskDecoder.prototype = {
 
     data: 0,
     bitcount: 0,
+    last_bit_state: 0, // last bit state for softmodem decoder
 
     x: null,
     u1: null,
@@ -121,6 +128,18 @@ AfskDecoder.prototype = {
       this.onStatus("carrier", this._haveCarrier);
   },
 
+  setDecodeScheme: function(mode) {
+    this.mode = mode == "softmodem" ? this.SOFT_MODEM : this.BELL_202;
+    switch (this.mode) {
+      case this.BELL_202:
+        this.decoder = this.decodeBellModem; break;
+      case this.SOFT_MODEM:
+        this.decoder = this.decodeSoftModem; break;
+      default:
+        this.decoder = this.decodeBellModem; break;
+    }
+  },
+
   dataAvailable: function(data) {
     var blob = new Blob([data]);
     var fileReader = new FileReader();
@@ -134,16 +153,16 @@ AfskDecoder.prototype = {
     fileReader.readAsText(blob);
   },
 
-  correlation: function(x , y, j) { // (float[] x, float[] y, int j)
-    var c = 0.0;
-    for (var i = 0; i < x.length; i++) {
-      c += x[j] * y[j];
-      j--;
-      if (j == -1)
-        j = x.length - 1;
-    }
-    return c;
-  },
+  // correlation: function(x , y, j) { // (float[] x, float[] y, int j)
+  //   var c = 0.0;
+  //   for (var i = 0; i < x.length; i++) {
+  //     c += x[j] * y[j];
+  //     j--;
+  //     if (j == -1)
+  //       j = x.length - 1;
+  //   }
+  //   return c;
+  // },
 
   sum: function(x, j) { //(float[] x, int j)
     c = 0.0;
@@ -160,7 +179,6 @@ AfskDecoder.prototype = {
   // filter a signal x stored in a cyclic buffer with a FIR filter f
   // The length of x must be larger than the length of the filter.
   filter: function(x, j, f) {
-    // from Filter.filter()
     var c = 0.0;
     for (var i = 0; i < f.length; i++) {
       c += x[j] * f[i];
@@ -169,6 +187,24 @@ AfskDecoder.prototype = {
         j = x.length - 1;
     }
     return c;
+  },
+
+  addBit: function(bit) {
+    var state = this.state;
+    state.bitcount++;
+    state.data >>= 1;
+    if (bit)
+      state.data += 128;
+    if (state.bitcount == 8) {
+      if (!this.packet)
+        this.packet = new Packet();
+      if (!this.packet.addByte(state.data)) {
+        state.current = state.WAITING;
+        this.data_carrier = false;
+      }
+      state.data = 0;
+      state.bitcount = 0;
+    }
   },
 
   addSamplesPrivate: function(s, n) { //(float[] s, int n)
@@ -209,130 +245,13 @@ AfskDecoder.prototype = {
       var fdiff = this.filter(state.diff, state.j_cd, this.cd_filter);
 
       if (state.previous_fdiff * fdiff < 0 || state.previous_fdiff == 0) {
-//console.log("transition at sample " + i);
-        // we found a transition
+      //console.log("transition at sample " + i);
         var p = state.t - state.last_transition;
         state.last_transition = state.t;
 
         var bits = Math.round(p / this.samplesPerBit);
 
-        // collect statistics
-/*
-        if (fdiff < 0) { // last period was high, meaning f0
-            f0_period_count++;
-            f0_max += f0_current_max;
-            double err = Math.abs(bits - ((double) p / (double)samples_per_bit));
-            //System.out.printf(")) %.02f %d %.02f\n",(double) p / (double)samples_per_bit,bits,err);
-            if (err > max_period_error) max_period_error = (float) err;
-
-            // prepare for the period just starting now
-            f1_current_min = fdiff;
-        } else {
-            f1_period_count++;
-            f1_min += f1_current_min;
-            double err = Math.abs(bits - ((double) p / (double)samples_per_bit));
-            //System.out.printf(")) %.02f %d %.02f\n",(double) p / (double)samples_per_bit,bits,err);
-            if (err > max_period_error) max_period_error = (float) err;
-
-            ii// prepare for the period just starting now
-            f0_current_max = fdiff;
-        }
-*/
-
-        if (bits == 0 || bits > 7) {
-          state.current = state.WAITING;
-          this.data_carrier = false;
-          state.flag_count = 0;
-        } else {
-//console.log("bits="+bits);
-          if (bits == 7) {
-            state.flag_count++;
-            console.log("FLAG FOUND (count = " + state.flag_count + ") in state " + state.current);
-            state.flag_separator_seen = false;
-
-            state.data = 0;
-            state.bitcount = 0;
-
-            switch (state.current) {
-              case state.WAITING:
-                state.current = state.JUST_SEEN_FLAG;
-                this.data_carrier = true;
-                // statisticsInit(); // start measuring a new packet
-                break;
-              case state.JUST_SEEN_FLAG:
-                break;
-              case state.DECODING:
-                if (this.packet && this.packet.terminate()) {
-                    //statisticsFinalize();
-                    //packet.statistics(new float[] {emphasis,f0_max/-f1_min,max_period_error});
-                    //System.out.print(String.format("%ddB:%.02f:%.02f\n", 
-                    //                          emphasis,f0_max/-f1_min,max_period_error));
-                    //handler.handlePacket(packet.bytesWithoutCRC());
-                    this.dataAvailable(this.packet.bytesWithoutCRC());
-                    //System.out.println(""+(++decode_count)+": "+packet);
-                }
-                this.packet = null;
-                state.current = state.JUST_SEEN_FLAG;
-                break;
-            }
-          } else {
-//console.log("ok state is " + state.current);
-            switch (state.current) {
-              case state.WAITING:
-                break;
-              case state.JUST_SEEN_FLAG:
-                state.current = state.DECODING;
-                break;
-              case state.DECODING:
-                break;
-            }
-
-            if (state.current == state.DECODING) {
-              // If this is the 0-bit after a flag, set seperator_seen
-              if (bits != 1) {
-                  state.flag_count = 0;
-              } else {
-                if (state.flag_count > 0 && !state.flag_separator_seen)
-                  state.flag_separator_seen = true;
-                else
-                  state.flag_count = 0;
-              }
-
-              for (var k = 0; k < bits - 1; k++) {
-                state.bitcount++;
-                state.data >>>= 1;
-                state.data += 128;
-                if (state.bitcount == 8) {
-                  if (!this.packet)
-                    this.packet = new Packet();
-                  if (!this.packet.addByte(state.data)) {
-                    state.current = state.WAITING;
-                    this.data_carrier = false;
-                  }
-                  //System.out.printf(">>> %02x %c %c\n", data, (char)data, (char)(data>>1));
-                  state.data = 0;
-                  state.bitcount = 0;
-                }
-              }
-
-              if (bits - 1 != 5) { // the zero after the ones is not a stuffing
-                state.bitcount++;
-                state.data >>= 1;
-                if (state.bitcount == 8) {
-                  if (!this.packet)
-                    this.packet = new Packet();
-                  if (!this.packet.addByte(state.data)) {
-                    state.current = state.WAITING;
-                    this.data_carrier = false;
-                  }
-                  //System.out.printf(">>> %02x %c %c\n", data, (char)data, (char)(data>>1));
-                  state.data = 0;
-                  state.bitcount = 0;
-                }
-              }
-            }
-          }
-        }
+        this.decoder(bits);        
       }
 
       state.previous_fdiff = fdiff;
@@ -349,6 +268,103 @@ AfskDecoder.prototype = {
       if (state.j_corr == state.c0_real.length) // samples_per_bit
         state.j_corr=0;
     } // main while loop
+  },
+
+  decodeBellModem: function(bits) {
+    var state = this.state;
+    if (bits == 0 || bits > 7) {
+      state.current = state.WAITING;
+      this.data_carrier = false;
+      state.flag_count = 0;
+    } else if (bits == 7) {
+      state.flag_count++;
+      console.log("FLAG FOUND (count = " + state.flag_count 
+        + ") in state " + state.current);
+      state.flag_separator_seen = false;
+
+      state.data = 0;
+      state.bitcount = 0;
+
+      switch (state.current) {
+        case state.WAITING:
+          state.current = state.DECODING;
+          this.data_carrier = true;
+          break;
+        case state.DECODING:
+          if (this.packet && this.packet.terminate()) {
+              this.dataAvailable(this.packet.bytesWithoutCRC());
+          }
+          this.packet = null;
+          break;
+      }
+    } else if (state.current == state.DECODING) {
+      // If this is the 0-bit after a flag, set seperator_seen
+      // if (bits != 1) {
+      //     state.flag_count = 0;
+      // } else {
+      //   if (state.flag_count > 0 && !state.flag_separator_seen)
+      //     state.flag_separator_seen = true;
+      //   else
+      //     state.flag_count = 0;
+      // }
+
+      for (var k = 0; k < bits - 1; k++) {
+        this.addBit(1);
+      }
+
+      if (bits - 1 != 5) { // the zero after the ones is not a stuffing
+        this.addBit(0);
+      }
+    }
+  },
+
+  decodeSoftModem: function(bits) {
+    var state = this.state;
+
+    switch (state.current) {
+      case this.WAITING:
+        if (bits > 10 && bits < 49) {
+          state.current = this.START;
+          console.log("PREAMBLE FOUND (count = " + state.flag_count 
+            + ") in state " + state.current);
+        }
+        break;
+
+      case this.DECODING:
+        var bits_total = bits + this.bitcount;
+        var bit = this.last_bit_state ^ 1;
+        this.last_bit_state = bit;
+
+
+        if (bits_total > 10) {
+          state.current = this.WAITING;
+        } else if (bits_total == 10) { // all bits high, stop bit, push bit
+          for(k = 0; k < bits - 2; k++)
+            this.addBit(1);
+          state.current = this.WAITING;
+        } else if (bits_total == 9) { // all bits high, stop bit, no push bit
+          for(k = 0; k < bits - 1; k++)
+            this.addBit(1);
+        } else {
+          for (k = 0; k < bits; k++)
+            this.addBit(bit);
+        } 
+        break;
+
+      case this.START:
+        if (bits == 1) {
+          state.current = this.DECODING;
+        } else if (bits > 1 && bits < 10){
+          for(var k = 0; k < bits -1; k++)
+            addBit(0);
+          state.current = this.DECODING;
+        } else {
+          state.current = this.WAITING;
+        }
+        state.last_bit_state = 0;
+        break;
+    }
+
   },
 
   demodulate: function(samples) {
