@@ -179,6 +179,8 @@ var ui = {
         this.onBaud(this.baud1200);
       else if (inputBaud == 300)
         this.onBaud(this.baud300);
+      else if (inputBaud == 1225)
+        this.onBaud(this.baud1225);
       else
         alert("ERP! Can't sent baud " + inputBaud + " for this source!");
 
