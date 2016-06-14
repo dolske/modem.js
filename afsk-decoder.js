@@ -1,37 +1,6 @@
-// from Packet.java
-//
-// Only methods used here are bytesWithoutCRC, addByte, terminate
-function Packet() {
-  this.data = new Uint8Array(this.MAX_SIZE);
-  this.dataSize = 0;
-}
-Packet.prototype = {
-  data: null,
-  dataSize: 0,
-
-  MAX_SIZE: 16384, // XXX I'm lazy, this should just realloc.
-
-  addByte: function(val) {
-    console.log("Packet: addByte[" + this.dataSize + "] = " + String.fromCharCode(val) + " / " + val.toString(16));
-    this.data[this.dataSize++] = val;
-    // XXX skipped some CRC stuff
-    return true;
-  },
-
-  terminate: function() {
-    console.log("Packet: terminate!");
-    // nop
-    // XXX skipped some CRC stuff
-    return true;
-  },
-
-  bytesWithoutCRC: function() {
-    console.log("Packet: bytesWithoutCRC");
-    // TODO
-    return this.data.subarray(0, this.dataSize);
-  },
-};
-
+var Packet = require('./packet.js')
+var AfskFilters = require('./afsk-filters.js')
+var debug = require('debug')('decoder')
 // Not implementing: 8000 -> 16000 supersampling.
 //
 // Orig code takes a "filter_length" argument. Not sure what this was being
@@ -43,6 +12,8 @@ Packet.prototype = {
 // The sample code's test construct with filter_length == 1, which matches
 // nothing, and forces the fallback code to use the last (longer) set. So
 // we'll just bake that in here.
+module.exports = AfskDecoder
+
 function AfskDecoder(sampleRate, baud, onStatus, mode) {
   this.sampleRate = sampleRate;
   this.baud = baud;
@@ -245,7 +216,7 @@ AfskDecoder.prototype = {
       var fdiff = this.filter(state.diff, state.j_cd, this.cd_filter);
 
       if (state.previous_fdiff * fdiff < 0 || state.previous_fdiff == 0) {
-      //console.log("transition at sample " + i);
+        debug("transition at sample " + i);
         var p = state.t - state.last_transition;
         state.last_transition = state.t;
 

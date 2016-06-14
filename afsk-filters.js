@@ -22,7 +22,7 @@
 
 // 9600, 12000, 11025, 16000, 22050, 24000, 44100, 48000
 
-AfskFilters = {
+module.exports = AfskFilters = {
   _getRateIndex: function(sampleRate) {
     switch (sampleRate) {
       case 9600:  return 0;
