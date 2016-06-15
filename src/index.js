@@ -6,10 +6,12 @@ module.exports = function (opts) {
   var sampleRate = opts.sample
   var baudrate = opts.baud
   var chunkSize = 4096 // number of samples to process at a time
+  var afskDecoder = AfskDecoder;
 
   return {
     modulate: modulateData,
-    demodulate: demodulateData
+    demodulate: demodulateData,
+    decoder: afskDecoder
   }
 
   function modulateData(data) {

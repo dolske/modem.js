@@ -1,4 +1,4 @@
-var createModem = require('./index.js')
+var createModem = require('src/index.js')
 var modem = createModem({sample: 44100, baud: 50})
 var mod = modem.modulate(process.argv[2])
 process.stdout.write(mod)

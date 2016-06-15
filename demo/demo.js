@@ -7,6 +7,12 @@ var afskNode, audioSource, micStream;
 var inputURL; // microphone, if not set
 console.log("speakerSampleRate is " + speakerSampleRate);
 
+var ui = require('./demo-ui.js');
+var createModem = require('../src/index.js');
+var modem = createModem({sample: speakerSampleRate, baud: baudrate});
+
+module.exports = { runModem, stahhhhp};
+
 function stahhhhp() {
   console.log("stopping");
   if (afskNode) {
@@ -36,8 +42,7 @@ function runModem(text) {
       ui.onRandomText();
       text = ui.textInput.value;
     }
-    dataBuffer = modulateData(text, speakerSampleRate, null);
-
+    dataBuffer = modem.modulate(text, speakerSampleRate, null);
     var b = dataBuffer.getChannelData(0);
     drawWaveformToCanvas(b, 0);
 
@@ -45,7 +50,7 @@ function runModem(text) {
   }
 
   if (mode == "loop") {
-    demodulateData(dataBuffer);
+    modem.demodulate(dataBuffer);
   } else if (mode == "recv") {
     if (inputURL) {
       startAudioFile(inputURL);
@@ -71,7 +76,7 @@ function onAudioProcess(event) {
   if (!decoder) {
     inputSampleRate = buffer.sampleRate;
     console.log("input sample rate is: " + inputSampleRate);
-    decoder = new AfskDecoder(inputSampleRate, baudrate, onDecoderStatus);
+    decoder = modem.decoder(inputSampleRate, baudrate, onDecoderStatus);
   }
 
   decoder.demodulate(samplesIn);

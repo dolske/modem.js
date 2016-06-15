@@ -1,8 +1,8 @@
 {
   "name": "modem.js",
-  "version": "1.0.0",
-  "description": "modem.js ========",
-  "main": "index.js",
+  "version": "1.1.0",
+  "description": "A JavaScript 1200 baud audio modem (modulator/demodulator for Bell 202 / AFSK / AX.25)",
+  "main": "dist/modem.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,7 +10,13 @@
     "type": "git",
     "url": "git+https://github.com/dolske/modem.js.git"
   },
-  "author": "",
+  "keywords": [
+    "modem",
+    "afsk",
+    "bell202",
+    "ax.25"
+  ],
+  "author": "Justin Dolske",
   "license": "BSD-2-Clause",
   "bugs": {
     "url": "https://github.com/dolske/modem.js/issues"
@@ -18,6 +24,15 @@
   "homepage": "https://github.com/dolske/modem.js#readme",
   "dependencies": {
     "audiobuffer": "^0.2.0",
-    "debug": "^2.2.0"
+    "debug": "^2.2.0",
+    "speaker": "^0.3.0"
+  },
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-browserify": "^5.0.0",
+    "grunt-cli": "^1.2.0",
+    "grunt-contrib-concat": "^0.5.0",
+    "grunt-contrib-watch": "^1.0.0",
+    "matchdep": "^0.3.0"
   }
 }

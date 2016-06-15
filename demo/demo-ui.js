@@ -1,3 +1,6 @@
+var controller = require('./demo.js');
+
+module.exports = ui;
 var ui = {
   mode: null,
   powerState: false,
@@ -191,11 +194,11 @@ var ui = {
   onPowerButton: function() {
     this.powerState = !this.powerState;
     if (this.powerState) {
-      runModem();
+      controller.runModem();
       this.powerLed.setAttribute("lit", "");
       this.powerButton.setAttribute("selected", "");
     } else {
-      stahhhhp();
+      controller.stahhhhp();
       this.powerLed.removeAttribute("lit");
       this.powerButton.removeAttribute("selected");
     }
@@ -252,7 +255,7 @@ var ui = {
       newInput = currInput;
     }
 
-    runModem(newInput);
+    controller.runModem(newInput);
 
     this._prevInput = currInput;
   },
@@ -298,5 +301,7 @@ var ui = {
 
     // Scroll to the bottom
     this.outputContainer.scrollTop = this.outputContainer.scrollHeight;
-  },
+  }
 }
+
+ui.init();
