@@ -1,3 +1,6 @@
+var controller = require('./demo.js');
+
+module.exports = ui;
 var ui = {
   mode: null,
   powerState: false,
@@ -41,6 +44,7 @@ var ui = {
     this.baud150  = document.getElementById("baud150");
     this.baud300  = document.getElementById("baud300");
     this.baud1200 = document.getElementById("baud1200");
+    this.baud1225 = document.getElementById("baud1225");
 
     this.baud50.addEventListener("click",
       function(e) { self.onBaud(e.currentTarget); e.preventDefault(); });
@@ -50,6 +54,8 @@ var ui = {
       function(e) { self.onBaud(e.currentTarget); e.preventDefault(); });
     this.baud1200.addEventListener("click",
       function(e) { self.onBaud(e.currentTarget); e.preventDefault(); });
+    this.baud1225.addEventListener("click",
+      function(e) { self.onBaud(e.currentTarget); e.preventDefault(); });
 
 
     this.inputSource0 = document.getElementById("inputSource0");
@@ -57,6 +63,7 @@ var ui = {
     this.inputSource2 = document.getElementById("inputSource2");
     this.inputSource3 = document.getElementById("inputSource3");
     this.inputSource4 = document.getElementById("inputSource4");
+    this.inputSource5 = document.getElementById("inputSource5");
 
     this.inputSource0.addEventListener("click",
       function(e) { self.onInputSource(e.currentTarget); e.preventDefault(); });
@@ -67,6 +74,8 @@ var ui = {
     this.inputSource3.addEventListener("click",
       function(e) { self.onInputSource(e.currentTarget); e.preventDefault(); });
     this.inputSource4.addEventListener("click",
+      function(e) { self.onInputSource(e.currentTarget); e.preventDefault(); });
+    this.inputSource5.addEventListener("click",
       function(e) { self.onInputSource(e.currentTarget); e.preventDefault(); });
 
 
@@ -145,6 +154,7 @@ var ui = {
     this.baud150.removeAttribute("checked");
     this.baud300.removeAttribute("checked");
     this.baud1200.removeAttribute("checked");
+    this.baud1225.removeAttribute("checked");
 
     targetNode.setAttribute("checked", "");
 
@@ -158,6 +168,7 @@ var ui = {
     this.inputSource2.removeAttribute("checked");
     this.inputSource3.removeAttribute("checked");
     this.inputSource4.removeAttribute("checked");
+    this.inputSource5.removeAttribute("checked");
 
     targetNode.setAttribute("checked", "");
 
@@ -171,6 +182,8 @@ var ui = {
         this.onBaud(this.baud1200);
       else if (inputBaud == 300)
         this.onBaud(this.baud300);
+      else if (inputBaud == 1225)
+        this.onBaud(this.baud1225);
       else
         alert("ERP! Can't sent baud " + inputBaud + " for this source!");
 
@@ -181,11 +194,11 @@ var ui = {
   onPowerButton: function() {
     this.powerState = !this.powerState;
     if (this.powerState) {
-      runModem();
+      controller.runModem();
       this.powerLed.setAttribute("lit", "");
       this.powerButton.setAttribute("selected", "");
     } else {
-      stahhhhp();
+      controller.stahhhhp();
       this.powerLed.removeAttribute("lit");
       this.powerButton.removeAttribute("selected");
     }
@@ -242,7 +255,7 @@ var ui = {
       newInput = currInput;
     }
 
-    runModem(newInput);
+    controller.runModem(newInput);
 
     this._prevInput = currInput;
   },
@@ -288,5 +301,7 @@ var ui = {
 
     // Scroll to the bottom
     this.outputContainer.scrollTop = this.outputContainer.scrollHeight;
-  },
+  }
 }
+
+ui.init();

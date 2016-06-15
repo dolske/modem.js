@@ -3,13 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <link rel="stylesheet" type="text/css" href="demo/demo.css">
-<script src="demo/demo-ui.js"></script>
-<script src="demo/demo.js"></script>
-<script src="demo/lorem.js"></script>
-
-<script src="afsk-filters.js"></script>
-<script src="afsk-encoder.js"></script>
-<script src="afsk-decoder.js"></script>
 </head><body><div id=header class=fixedSimple title="modem.js">
                       __
                      /\ \                           __
@@ -68,7 +61,7 @@ constant stream.
 <br>
 <div id=optionsContainer class=fixed hidden><div id=optionsDiv>░░░░░░░░░░░░░░░░░░░░░░░░░░ Options ░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-Baud rate:  <a href="#" id=baud50 value=50 class=radio>50</a>  <a href="#" id=baud150 value=150 class=radio>150</a>  <a href="#" id=baud300 value=300 class=radio>300</a>  <a href="#" id=baud1200 value=1200 class=radio>1200</a>
+Baud rate:  <a href="#" id=baud50 value=50 class=radio>50</a>  <a href="#" id=baud150 value=150 class=radio>150</a>  <a href="#" id=baud300 value=300 class=radio>300</a>  <a href="#" id=baud1200 value=1200 class=radio>1200</a> <a href="#" id=baud1225 value=1225 class=radio>1225</a>
 
 Input:
   <a href="#" id=inputSource0 value="" class=radio>Microphone</a>
@@ -76,6 +69,7 @@ Input:
   <a href="#" id=inputSource2 baud=1200 value="demo/wikipedia_AFSK_1200_baud.ogg" class=radio>Wikipedia AFSK example</a>
   <a href="#" id=inputSource3 baud=1200 value="demo/pass_0513_packet.wav" class=radio>KickSat AX.25 packet</a>
   <a href="#" id=inputSource4 baud=1200 value="demo/CallerID-1.wav" class=radio>Caller ID</a>
+  <a href="#" id=inputSource5 baud=1225 value="demo/SoftModem.wav" class=radio>SoftModem</a>
 
 <a href="#" id=debugCheck class=checkbox>Debug console logging</a>
 <br><br><br>
@@ -87,8 +81,7 @@ Input:
 <div id=footer class=fixed>By Justin Dolske: <a href="https://dolske.wordpress.com/">Blog post</a> -- <a href="https://github.com/dolske/modem.js">Source Code</a> -- <a href="http://dolske.net/hacks/modem.js/demo.html">Demo</a>
 </div>
 <br>
-<script>
-ui.init();
-</script>
+<script src="demo/bundle.js"></script>
+<script src="demo/lorem.js"></script>
 </body>
 </html>
